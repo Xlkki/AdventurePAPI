@@ -1,0 +1,4 @@
+name: AdventurePAPI
+version: '${project.version}'
+main: ru.xikki.plugins.adventurepapi.AdventurePAPI
+api-version: 1.19
