@@ -162,7 +162,6 @@ which format will be extended to the following components
 <img src="https://media.discordapp.net/attachments/945691411435622453/1119718071729389718/image.png">
 
 <br>
-<br>
 
 #### &8This text colored blue. {name}+ and this text white. &8Again blue
 <img src="https://media.discordapp.net/attachments/945691411435622453/1119718433689436410/image.png">
