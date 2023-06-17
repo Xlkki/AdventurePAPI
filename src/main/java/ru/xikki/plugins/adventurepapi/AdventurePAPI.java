@@ -40,6 +40,11 @@ public final class AdventurePAPI extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new PluginListener(), this);
     }
 
+    @Override
+	public void onDisable() {
+        this.placeholders.clear();
+	}
+
     @NotNull
     public Map<String, AbstractPlaceholder> getPlaceholders() {
         return unmodifiablePlaceholders;
