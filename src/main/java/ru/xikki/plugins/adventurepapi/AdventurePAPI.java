@@ -80,46 +80,12 @@ public final class AdventurePAPI extends JavaPlugin {
 
     @NotNull
     public static String applyPlaceholders(@NotNull String raw, @Nullable Object target) {
-        String content = raw;
-        int findPosition = 0;
-        Matcher matcher = AbstractPlaceholder.PLACEHOLDER_FORMAT_PATTERN.matcher(content);
-        while (matcher.find(findPosition)) {
-            int startPosition = matcher.start();
-            int endPosition = matcher.end();
-            String placeholderId = matcher.group(1);
-            AbstractPlaceholder placeholder = AbstractPlaceholder.from(placeholderId);
-            if (placeholder == null) {
-                findPosition = startPosition + 1;
-                continue;
-            }
-            String argumentsRaw = matcher.group(2);
-            String[] arguments = new String[0];
-            if (argumentsRaw != null)
-                arguments = argumentsRaw.split("\\|");
-            Object value = null;
-            if (placeholder instanceof NonTargetedPlaceholder nonTargetedPlaceholder)
-                value = nonTargetedPlaceholder.apply(arguments);
-            else if (placeholder instanceof TargetedPlaceholder<?> && target != null) {
-                ParameterizedType type = (ParameterizedType) placeholder.getClass().getGenericSuperclass();
-                Class<?> targetType = (Class<?>) type.getActualTypeArguments()[0];
-                if (targetType.isInstance(target)) {
-                    TargetedPlaceholder<Object> targetedPlaceholder = (TargetedPlaceholder<Object>) placeholder;
-                    value = targetedPlaceholder.apply(target, arguments);
-                }
-            }
-            if (value == null) {
-                findPosition = startPosition + 1;
-                continue;
-            }
-            if (value instanceof ComponentLike componentLike) {
-                Component componentValue = componentLike.asComponent();
-                value = LegacyComponentSerializer.legacySection().serialize(componentValue);
-            }
-            content = content.substring(0, startPosition) + value + content.substring(endPosition);
-            matcher = AbstractPlaceholder.PLACEHOLDER_FORMAT_PATTERN.matcher(content);
-            findPosition = 0;
-        }
-        return content;
+        return LegacyComponentSerializer.legacySection().serialize(
+                AdventurePAPI.applyPlaceholders(
+                        LegacyComponentSerializer.legacySection().deserialize(raw),
+                        target
+                )
+        );
     }
 
     @NotNull
