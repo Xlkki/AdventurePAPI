@@ -1,6 +1,6 @@
 package ru.xikki.plugins.adventurepapi.placeholders;
 
-import org.bukkit.plugin.Plugin;import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.xikki.plugins.adventurepapi.AdventurePAPI;
@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 public abstract class AbstractPlaceholder {
 
 	public static final Pattern PLACEHOLDER_ID_PATTERN = Pattern.compile("[a-z0-9_-]+");
-	public static final Pattern PLACEHOLDER_FORMAT_PATTERN = Pattern.compile("\\{(" + PLACEHOLDER_ID_PATTERN.pattern() +")(?:\\:(.+?))?\\}\\+?");
+	public static final Pattern PLACEHOLDER_FORMAT_PATTERN = Pattern.compile("\\{(" + PLACEHOLDER_ID_PATTERN.pattern() + ")(?:\\:(.+?))?\\}\\+?");
 
 	protected final String id;
 	protected final Plugin parent;
