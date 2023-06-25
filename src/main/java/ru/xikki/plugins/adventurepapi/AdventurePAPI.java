@@ -3,6 +3,7 @@ package ru.xikki.plugins.adventurepapi;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
@@ -98,6 +99,15 @@ public final class AdventurePAPI extends JavaPlugin {
 	@NotNull
 	public static String applyPlaceholders(@NotNull String raw) {
 		return AdventurePAPI.applyPlaceholders(raw, null, null);
+	}
+
+	@NotNull
+	public static String stripPlaceholders(@NotNull String raw) {
+		return LegacyComponentSerializer.legacySection().serialize(
+				AdventurePAPI.stripPlaceholders(
+						LegacyComponentSerializer.legacySection().deserialize(raw)
+				)
+		);
 	}
 
 	@NotNull
@@ -229,6 +239,21 @@ public final class AdventurePAPI extends JavaPlugin {
 	@NotNull
 	public static Component applyPlaceholders(@NotNull ComponentLike raw) {
 		return AdventurePAPI.applyPlaceholders(raw, null, null);
+	}
+
+	@NotNull
+	public static Component stripPlaceholders(@NotNull ComponentLike raw) {
+		return raw.asComponent().replaceText(TextReplacementConfig.builder()
+				.match(AbstractPlaceholder.PLACEHOLDER_FORMAT_PATTERN)
+				.replacement(((matchResult, builder) -> {
+					String placeholderId = matchResult.group(1);
+					if (AbstractPlaceholder.from(placeholderId) == null)
+						return Component.text(matchResult.group());
+					else
+						return Component.empty();
+				}))
+				.build()
+		);
 	}
 
 }

@@ -201,6 +201,16 @@ String formattedStr = AdventurePAPI.applyPlaceholders(rawStr, firstTarget, secon
 Component formattedComponent = AdventurePAPI.applyPlaceholders(rawComponent, firstTarget, secondTarget);
 ```
 
+### Placeholders stripping
+
+```Java
+String rawStr = ...;
+Component rawComponent = ...;
+
+String formattedStr = AdventurePAPI.stripPlaceholders(rawStr);
+Component formattedComponent = AdventurePAPI.stripPlaceholders(rawComponent);
+```
+
 
 ### Placeholder registration
 ```Java
