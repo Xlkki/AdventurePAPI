@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.xikki.plugins.adventurepapi.listeners.PluginListener;
 import ru.xikki.plugins.adventurepapi.placeholders.AbstractPlaceholder;
+import ru.xikki.plugins.adventurepapi.placeholders.BiTargetedPlaceholder;
 import ru.xikki.plugins.adventurepapi.placeholders.NonTargetedPlaceholder;
 import ru.xikki.plugins.adventurepapi.placeholders.TargetedPlaceholder;
 
@@ -79,22 +80,28 @@ public final class AdventurePAPI extends JavaPlugin {
 	}
 
 	@NotNull
-	public static String applyPlaceholders(@NotNull String raw, @Nullable Object target) {
+	public static String applyPlaceholders(@NotNull String raw, @Nullable Object firstTarget, @Nullable Object secondTarget) {
 		return LegacyComponentSerializer.legacySection().serialize(
 				AdventurePAPI.applyPlaceholders(
 						LegacyComponentSerializer.legacySection().deserialize(raw),
-						target
+						firstTarget,
+						secondTarget
 				)
 		);
 	}
 
 	@NotNull
-	public static String applyPlaceholders(@NotNull String raw) {
-		return AdventurePAPI.applyPlaceholders(raw, null);
+	public static String applyPlaceholders(@NotNull String raw, @Nullable Object target) {
+		return AdventurePAPI.applyPlaceholders(raw, target, null);
 	}
 
 	@NotNull
-	public static Component applyPlaceholders(@NotNull ComponentLike raw, @Nullable Object target) {
+	public static String applyPlaceholders(@NotNull String raw) {
+		return AdventurePAPI.applyPlaceholders(raw, null, null);
+	}
+
+	@NotNull
+	public static Component applyPlaceholders(@NotNull ComponentLike raw, @Nullable Object firstTarget, @Nullable Object secondTarget) {
 		Component rawComponent = raw.asComponent();
 		Component result = Component.empty().style(rawComponent.style());
 		if (rawComponent instanceof TextComponent textComponent) {
@@ -120,12 +127,35 @@ public final class AdventurePAPI extends JavaPlugin {
 				Object value = null;
 				if (placeholder instanceof NonTargetedPlaceholder nonTargetedPlaceholder)
 					value = nonTargetedPlaceholder.apply(arguments);
-				else if (placeholder instanceof TargetedPlaceholder<?> && target != null) {
+				else if (placeholder instanceof TargetedPlaceholder<?>) {
 					ParameterizedType type = (ParameterizedType) placeholder.getClass().getGenericSuperclass();
 					Class<?> targetType = (Class<?>) type.getActualTypeArguments()[0];
-					if (targetType.isInstance(target)) {
+					if (targetType.isInstance(firstTarget)) {
 						TargetedPlaceholder<Object> targetedPlaceholder = (TargetedPlaceholder<Object>) placeholder;
-						value = targetedPlaceholder.apply(target, arguments);
+						value = targetedPlaceholder.apply(firstTarget, arguments);
+					} else if (targetType.isInstance(secondTarget)) {
+						TargetedPlaceholder<Object> targetedPlaceholder = (TargetedPlaceholder<Object>) placeholder;
+						value = targetedPlaceholder.apply(secondTarget, arguments);
+					}
+				} else if (placeholder instanceof BiTargetedPlaceholder<?, ?>) {
+					ParameterizedType type = (ParameterizedType) placeholder.getClass().getGenericSuperclass();
+					Class<?> firstTargetType = (Class<?>) type.getActualTypeArguments()[0];
+					Class<?> secondTargetType = (Class<?>) type.getActualTypeArguments()[1];
+
+					Object first = null;
+					Object second = null;
+
+					if (firstTargetType.isInstance(firstTarget) && secondTargetType.isInstance(secondTarget)) {
+						first = firstTarget;
+						second = secondTarget;
+					} else if (firstTargetType.isInstance(secondTarget) && secondTargetType.isInstance(firstTarget)) {
+						first = secondTarget;
+						second = firstTarget;
+					}
+
+					if (first != null) {
+						BiTargetedPlaceholder<Object, Object> targetedPlaceholder = (BiTargetedPlaceholder<Object, Object>) placeholder;
+						value = targetedPlaceholder.apply(first, second, arguments);
 					}
 				}
 				if (value == null) {
@@ -134,7 +164,7 @@ public final class AdventurePAPI extends JavaPlugin {
 				}
 				if (value instanceof ComponentLike componentLike) {
 					Component componentValue = componentLike.asComponent();
-					componentValue = AdventurePAPI.applyPlaceholders(componentValue, target);
+					componentValue = AdventurePAPI.applyPlaceholders(componentValue, firstTarget, secondTarget);
 					if (parent == result) {
 						result = result.append(Component.text(content.substring(0, startPosition)));
 						if (applyStyle)
@@ -173,7 +203,7 @@ public final class AdventurePAPI extends JavaPlugin {
 			else
 				lastComponent = Component.empty();
 			for (Component children : rawComponent.children())
-				lastComponent = lastComponent.append(AdventurePAPI.applyPlaceholders(children, target));
+				lastComponent = lastComponent.append(AdventurePAPI.applyPlaceholders(children, firstTarget, secondTarget));
 			for (int i = 0; i < oldChildrenComponents.size() - 1; i++)
 				newChildrenComponents.add(oldChildrenComponents.get(i));
 			newChildrenComponents.add(lastComponent);
@@ -181,19 +211,24 @@ public final class AdventurePAPI extends JavaPlugin {
 		} else {
 			result = rawComponent.children(Collections.emptyList());
 			for (Component children : rawComponent.children())
-				result = result.append(AdventurePAPI.applyPlaceholders(children, target));
+				result = result.append(AdventurePAPI.applyPlaceholders(children, firstTarget, secondTarget));
 		}
 		HoverEvent<?> hover = result.hoverEvent();
 		if (hover != null && hover.action().equals(HoverEvent.Action.SHOW_TEXT))
 			result = result.hoverEvent(HoverEvent.showText(
-					AdventurePAPI.applyPlaceholders((Component) hover.value(), target)
+					AdventurePAPI.applyPlaceholders((Component) hover.value(), firstTarget, secondTarget)
 			));
 		return result;
 	}
 
 	@NotNull
+	public static Component applyPlaceholders(@NotNull ComponentLike raw, @Nullable Object target) {
+		return AdventurePAPI.applyPlaceholders(raw, target, null);
+	}
+
+	@NotNull
 	public static Component applyPlaceholders(@NotNull ComponentLike raw) {
-		return AdventurePAPI.applyPlaceholders(raw, null);
+		return AdventurePAPI.applyPlaceholders(raw, null, null);
 	}
 
 }
