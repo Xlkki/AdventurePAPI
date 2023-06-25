@@ -248,7 +248,7 @@ public final class AdventurePAPI extends JavaPlugin {
 				.replacement(((matchResult, builder) -> {
 					String placeholderId = matchResult.group(1);
 					if (AbstractPlaceholder.from(placeholderId) == null)
-						return Component.text(matchResult.group());
+						return Component.text("unknown");
 					else
 						return Component.empty();
 				}))
